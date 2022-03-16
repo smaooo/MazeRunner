@@ -13,14 +13,17 @@ namespace MazeObjects
         public Cell[,] grid;
         Cell start;
         Cell end;
+        GameObject flagPrefab;
+        float cellScaleFactor;
 
-
-        public Maze(Vector2 size, GameObject cellPrefab, GameObject wallPrefab, GameObject solidPrefab)
+        public Maze(Vector2 size, GameObject cellPrefab, GameObject wallPrefab, GameObject solidPrefab, GameObject flag)
         {
 
             this.w = Mathf.FloorToInt(size.x / cellPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size.x);
             this.h = Mathf.FloorToInt(size.x / cellPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size.z);
             this.grid = new Cell[w, h];
+            this.flagPrefab = flag;
+            this.cellScaleFactor = cellPrefab.transform.lossyScale.x;
             for (int x = 0; x < this.w; x++)
             {
                 for (int y = 0; y < this.h; y++)
@@ -38,7 +41,6 @@ namespace MazeObjects
             switch (point)
             {
                 case 0:
-                    Debug.Log(point);
                     for (int i = 0; i < this.w; i++)
                     {
                         for (int j = 0; j < this.h; j++)
@@ -52,7 +54,6 @@ namespace MazeObjects
                     break;
 
                 case 1:
-                    Debug.Log(point);
                     for (int i = this.w - 1; i > 0; i--)
                     {
                         for (int j = this.h - 1; j > 0; j--)
@@ -129,7 +130,7 @@ namespace MazeObjects
                 case 1:
 
                     this.grid[x, y].Destroy();
-                    this.grid[x, y] = new EndPoint(x, y, this, this.grid[x, y].prefab);
+                    this.grid[x, y] = new EndPoint(x, y, this, this.grid[x, y].prefab, this.flagPrefab);
                     this.end = this.grid[x, y];
                     
                     break;
@@ -239,13 +240,12 @@ namespace MazeObjects
                         0 <= this.y + loc.y && this.y + loc.y < maze.h)
                     {
                         neighbors.Add(new Vector2Int(this.x + loc.x, this.y + loc.y));
-                        //Debug.Log(this.x + " " + this.y + ": " + neighbors.Last());
                     }
                 }
 
                 obj = GameObject.Instantiate(prefab);
 
-                obj.transform.position = new Vector3(this.x, 0, this.y);
+                obj.transform.position = new Vector3(this.x * maze.cellScaleFactor, 0, this.y * maze.cellScaleFactor);
 
             }
 
@@ -283,9 +283,14 @@ namespace MazeObjects
 
         public class EndPoint : Cell
         {
-            public EndPoint(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+            public EndPoint(int x, int y, Maze maze, GameObject prefab, GameObject flag) : base(x, y, maze, prefab)
             {
                 this.obj.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
+                Vector3 flagLoc = new Vector3(this.obj.transform.position.x,
+                    this.prefab.transform.position.y + this.obj.GetComponent<MeshRenderer>().bounds.extents.y,
+                    this.prefab.transform.position.z);
+                var f= GameObject.Instantiate(flag, this.obj.transform.position, Quaternion.identity, this.obj.transform.parent);
+                f.transform.localScale *= 10;
             }
         }
     }

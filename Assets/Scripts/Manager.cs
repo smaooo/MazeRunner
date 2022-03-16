@@ -12,13 +12,15 @@ public class Manager : MonoBehaviour
     private GameObject wallPrefab;
     [SerializeField]
     private GameObject solidPrefab;
+    [SerializeField]
+    private GameObject flagPrefab;
 
     void Start()
     {
 
         var size = new Vector2(33, 33);
 
-        var x = new Maze(size, cellPrefab, wallPrefab, solidPrefab);
+        var x = new Maze(size, cellPrefab, wallPrefab, solidPrefab, flagPrefab);
 
       
     }
