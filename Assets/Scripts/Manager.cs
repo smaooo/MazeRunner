@@ -16,7 +16,7 @@ public class Manager : MonoBehaviour
     void Start()
     {
 
-        var size = new Vector2(16, 16);
+        var size = new Vector2(33, 33);
 
         var x = new Maze(size, cellPrefab, wallPrefab, solidPrefab);
 
