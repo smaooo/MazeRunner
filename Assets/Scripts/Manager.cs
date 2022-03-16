@@ -6,14 +6,10 @@ using MazeObjects;
 public class Manager : MonoBehaviour
 {
 
+
+
     [SerializeField]
-    private GameObject cellPrefab;
-    [SerializeField]
-    private GameObject wallPrefab;
-    [SerializeField]
-    private GameObject solidPrefab;
-    [SerializeField]
-    private GameObject flagPrefab;
+    private Prefabs prefabs;
     private Character character;
 
     void Start()
@@ -21,7 +17,9 @@ public class Manager : MonoBehaviour
 
         var size = new Vector2(33, 33);
 
-        var x = new Maze(size, cellPrefab, wallPrefab, solidPrefab, flagPrefab);
+
+
+        var x = new Maze(size, prefabs);
         character = FindObjectOfType<Character>();
 
         var loc = x.start.obj.transform.position;
@@ -32,7 +30,9 @@ public class Manager : MonoBehaviour
         loc = next.obj.transform.position;
         loc.y += next.obj.GetComponent<Renderer>().bounds.size.y / 2;
         character.transform.rotation = Quaternion.LookRotation(loc - character.transform.position, character.transform.up);
-        
+
+
+       
     }
 
     // Update is called once per frame

@@ -152,10 +152,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3853d542486069742b7a40fab0df2d52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cellPrefab: {fileID: 1878729626794818552, guid: 0af49b8b0f6d13d41a5692008c2df360, type: 3}
-  wallPrefab: {fileID: 4031876240357119777, guid: 15d6c057886a763478e5447308d94d59, type: 3}
-  solidPrefab: {fileID: 7894556028747036938, guid: 3f0e0ea9f5f9b9a42948e1cab78516c9, type: 3}
-  flagPrefab: {fileID: 4277917956668243690, guid: 06017905aa325864eb6534e4f5fd77bd, type: 3}
+  prefabs:
+    prefabs:
+    - name: 0
+      obj: {fileID: 1878729626794818552, guid: 0af49b8b0f6d13d41a5692008c2df360, type: 3}
+    - name: 1
+      obj: {fileID: 4031876240357119777, guid: 15d6c057886a763478e5447308d94d59, type: 3}
+    - name: 2
+      obj: {fileID: 7894556028747036938, guid: 3f0e0ea9f5f9b9a42948e1cab78516c9, type: 3}
+    - name: 3
+      obj: {fileID: 4277917956668243690, guid: 06017905aa325864eb6534e4f5fd77bd, type: 3}
+    - name: 4
+      obj: {fileID: 8740010797618170080, guid: 2bb00ab7afecd1a48b425d4050345dfe, type: 3}
 --- !u!4 &330471291
 Transform:
   m_ObjectHideFlags: 0

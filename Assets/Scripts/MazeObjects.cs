@@ -6,6 +6,27 @@ using System.Linq;
 
 namespace MazeObjects
 {
+
+    public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN}
+    [Serializable]
+    public struct Prefab
+    {
+        public PrefabNames name;
+        public GameObject obj;
+
+        
+    }
+
+    [Serializable]
+    public struct Prefabs
+    {
+        public List<Prefab> prefabs;
+
+        public GameObject GetObject(PrefabNames name)
+        {
+            return prefabs.Find(o => o.name == name).obj;
+        }
+    }
     public class Maze
     {
         public int w;
@@ -13,26 +34,28 @@ namespace MazeObjects
         public Cell[,] grid;
         public Cell start;
         public Cell end;
+        public List<Cell> cells;
         GameObject flagPrefab;
         public float cellScaleFactor;
+        Prefabs prefabs;
 
-        public Maze(Vector2 size, GameObject cellPrefab, GameObject wallPrefab, GameObject solidPrefab, GameObject flag)
+        public Maze(Vector2 size, Prefabs prefabs)
         {
-
-            this.w = Mathf.FloorToInt(size.x / cellPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size.x);
-            this.h = Mathf.FloorToInt(size.x / cellPrefab.GetComponent<MeshFilter>().sharedMesh.bounds.size.z);
+            this.prefabs = prefabs;
+            this.w = Mathf.FloorToInt(size.x / this.prefabs.GetObject(PrefabNames.CELL).GetComponent<MeshFilter>().sharedMesh.bounds.size.x);
+            this.h = Mathf.FloorToInt(size.x / this.prefabs.GetObject(PrefabNames.CELL).GetComponent<MeshFilter>().sharedMesh.bounds.size.z);
             this.grid = new Cell[w, h];
-            this.flagPrefab = flag;
-            this.cellScaleFactor = cellPrefab.transform.lossyScale.x;
+            this.flagPrefab = this.prefabs.GetObject(PrefabNames.FLAG);
+            this.cellScaleFactor = this.prefabs.GetObject(PrefabNames.CELL).transform.lossyScale.x;
             for (int x = 0; x < this.w; x++)
             {
                 for (int y = 0; y < this.h; y++)
                 {
-                    this.grid[x, y] = new Wall(x, y, this, wallPrefab);
+                    this.grid[x, y] = new Wall(x, y, this, this.prefabs.GetObject(PrefabNames.WALL));
                 }
             }
 
-            Generate(cellPrefab, solidPrefab);
+            Generate();
         }
 
         private void SetStartEnd(int point)
@@ -136,9 +159,10 @@ namespace MazeObjects
                     break;
             }
         }
-        private void Generate(GameObject cellPrefab, GameObject solidPrefab)
+        private void Generate()
         {
             List<Cell> unvisited = new List<Cell>();
+            this.cells = new List<Cell>();
 
             for (int x = 0; x < this.grid.GetLength(0); x++)
             {
@@ -150,7 +174,7 @@ namespace MazeObjects
                     }
                 }
             }
-
+            int coinCounter = 0;
             var current = unvisited.Last();
             unvisited.Remove(current);
 
@@ -175,14 +199,28 @@ namespace MazeObjects
 
                     var nx = Mathf.FloorToInt(current.x - (current.x - n.x) / 2);
                     var ny = Mathf.FloorToInt(current.y - (current.y - n.y) / 2);
-                    //Debug.Log(nx + " " + ny);
 
+                    var nb = GetNeighbors(this.grid[current.x, current.y]).Find(x => x != this.grid[nx,ny] && x != this.grid[current.x, current.y]);
+                    if (nb != null)
+                    {
+                        var b = FindCellPosition(nb);
+                        nb.Destroy();
+                        nb = coinCounter % 6 != 0 ?
+                            new Cell(b.x, b.y, this, this.prefabs.GetObject(PrefabNames.CELL)) :
+                            new CoinCell(b.x, b.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
 
+                    }
                     this.grid[nx, ny].Destroy();
-                    this.grid[nx, ny] = new Cell(nx, ny, this, cellPrefab);
+                    this.grid[nx, ny] = coinCounter % 6 != 0 ?
+                        new Cell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL)) : 
+                        new CoinCell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
                     this.grid[current.x, current.y].Destroy();
-                    this.grid[current.x, current.y] = new Cell(current.x, current.y, this, cellPrefab);
+                    this.grid[current.x, current.y] = coinCounter % 6 != 0 ?
+                        new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL)) :
+                        new CoinCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
 
+                    this.cells.Add(this.grid[nx, ny]);
+                    this.cells.Add(this.grid[current.x, current.y]);
                     current = n;
 
                     unvisited.Remove(n);
@@ -194,6 +232,8 @@ namespace MazeObjects
                         current = stack.Pop();
                     }
                 }
+
+                coinCounter++;
             }
 
             SetStartEnd(0);
@@ -205,7 +245,7 @@ namespace MazeObjects
                     if (x == 0 || x == this.grid.GetLength(0) - 1 || y == 0 || y == this.grid.GetLength(1) - 1)
                     {
                         this.grid[x, y].Destroy();
-                        this.grid[x, y] = new SolidWall(x, y, this, solidPrefab);
+                        this.grid[x, y] = new SolidWall(x, y, this, this.prefabs.GetObject(PrefabNames.SOLIDWALL));
                     }
                 }
 
@@ -301,6 +341,17 @@ namespace MazeObjects
         }
     }
 
+    public class CoinCell : Cell
+    {
+        public CoinCell(int x, int y, Maze maze, GameObject prefab, GameObject coin) : base(x,y, maze, prefab)
+        {
+            var c = GameObject.Instantiate(coin);
+            var loc = this.obj.transform.position;
+            loc.y = this.obj.GetComponent<Renderer>().bounds.size.y;
+            c.transform.position = loc;
+            c.transform.SetParent(this.obj.transform);
+        }
+    }
     public class Wall : Cell
     {
         public Wall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
