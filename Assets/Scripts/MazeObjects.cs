@@ -11,10 +11,10 @@ namespace MazeObjects
         public int w;
         public int h;
         public Cell[,] grid;
-        Cell start;
-        Cell end;
+        public Cell start;
+        public Cell end;
         GameObject flagPrefab;
-        float cellScaleFactor;
+        public float cellScaleFactor;
 
         public Maze(Vector2 size, GameObject cellPrefab, GameObject wallPrefab, GameObject solidPrefab, GameObject flag)
         {
@@ -210,88 +210,133 @@ namespace MazeObjects
                 }
 
             }
+
+            
         }
 
-        public class Cell
+
+        private Vector2Int FindCellPosition(Cell cell)
         {
-            int w = 16;
-            int h = 16;
-            public int x;
-            public int y;
-            public List<Vector2Int> neighbors;
-            public GameObject prefab;
-            public GameObject obj;
-
-            public Cell()
+            Vector2Int pos = Vector2Int.zero;
+            for (int i = 0; i < this.grid.GetLength(0); i++)
             {
-
-            }
-
-            public Cell(int x, int y, Maze maze, GameObject prefab)
-            {
-                this.x = x;
-                this.y = y;
-                this.prefab = prefab;
-                var locs = new Vector2Int[] { new Vector2Int(-2, 0), new Vector2Int(0, -2), new Vector2Int(2, 0), new Vector2Int(0, 2) };
-                neighbors = new List<Vector2Int>();
-                foreach (var loc in locs)
+                for (int j = 0; j < this.grid.GetLength(1); j++)
                 {
-                    if (0 <= this.x + loc.x && this.x + loc.x < maze.w &&
-                        0 <= this.y + loc.y && this.y + loc.y < maze.h)
+                    if (this.grid[i,j].Equals(cell))
                     {
-                        neighbors.Add(new Vector2Int(this.x + loc.x, this.y + loc.y));
+                        pos = new Vector2Int(i, j);
+                        return pos;
                     }
                 }
-
-                obj = GameObject.Instantiate(prefab);
-
-                obj.transform.position = new Vector3(this.x * maze.cellScaleFactor, 0, this.y * maze.cellScaleFactor);
-
             }
-
-            public void Destroy()
-            {
-                GameObject.Destroy(this.obj);
-            }
+            return pos;
         }
 
-        public class Wall : Cell
+        public Cell GetCell(Vector2Int postion)
         {
-            public Wall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
-            {
-            }
-
-         
+            return this.grid[postion.x, postion.y];
         }
 
-        public class SolidWall : Cell
+
+        public List<Cell> GetNeighbors(Cell cell)
         {
-            public SolidWall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+            var neighbors = new List<Cell>();
+
+            var locs = new List<Vector2Int>() { new Vector2Int(1, 0), new Vector2Int(0, 1),
+                new Vector2Int(-1, 0), new Vector2Int(0, -1) };
+            var cellPos = FindCellPosition(cell);
+            foreach(var loc in locs)
             {
+                if (!(this.grid[cellPos.x + loc.x, cellPos.y + loc.y] is Wall))
+                {
+                    neighbors.Add(GetCell(new Vector2Int(cellPos.x + loc.x, cellPos.y + loc.y)));
+                }
+                    
             }
 
+            return neighbors;
+        }
+
+    }
+
+    public class Cell
+    {
+       
+        public int x;
+        public int y;
+        public List<Vector2Int> neighbors;
+        public GameObject prefab;
+        public GameObject obj;
+
+        public Cell()
+        {
 
         }
 
-        public class StartPoint : Cell
+        public Cell(int x, int y, Maze maze, GameObject prefab)
         {
-            public StartPoint(int x, int y, Maze maze, GameObject prefab) : base(x,y,maze,prefab)
+            this.x = x;
+            this.y = y;
+            this.prefab = prefab;
+            var locs = new Vector2Int[] { new Vector2Int(-2, 0), new Vector2Int(0, -2), new Vector2Int(2, 0), new Vector2Int(0, 2) };
+            neighbors = new List<Vector2Int>();
+            foreach (var loc in locs)
             {
-                this.obj.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.green);
+                if (0 <= this.x + loc.x && this.x + loc.x < maze.w &&
+                    0 <= this.y + loc.y && this.y + loc.y < maze.h)
+                {
+                    neighbors.Add(new Vector2Int(this.x + loc.x, this.y + loc.y));
+                }
             }
+
+            obj = GameObject.Instantiate(prefab);
+
+            obj.transform.position = new Vector3(this.x * maze.cellScaleFactor, 0, this.y * maze.cellScaleFactor);
+
         }
 
-        public class EndPoint : Cell
+        public void Destroy()
         {
-            public EndPoint(int x, int y, Maze maze, GameObject prefab, GameObject flag) : base(x, y, maze, prefab)
-            {
-                this.obj.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
-                Vector3 flagLoc = new Vector3(this.obj.transform.position.x,
-                    this.prefab.transform.position.y + this.obj.GetComponent<MeshRenderer>().bounds.extents.y,
-                    this.prefab.transform.position.z);
-                var f= GameObject.Instantiate(flag, this.obj.transform.position, Quaternion.identity, this.obj.transform.parent);
-                f.transform.localScale *= 10;
-            }
+            GameObject.Destroy(this.obj);
+        }
+    }
+
+    public class Wall : Cell
+    {
+        public Wall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+        {
+        }
+
+
+    }
+
+    public class SolidWall : Wall
+    {
+        public SolidWall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+        {
+        }
+
+
+    }
+
+    public class StartPoint : Cell
+    {
+        public StartPoint(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+        {
+            //this.obj.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.green);
+        }
+    }
+
+    public class EndPoint : Cell
+    {
+        public EndPoint(int x, int y, Maze maze, GameObject prefab, GameObject flag) : base(x, y, maze, prefab)
+        {
+            this.obj.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
+            Vector3 flagLoc = new Vector3(this.obj.transform.position.x,
+                this.prefab.transform.position.y + this.obj.GetComponent<MeshRenderer>().bounds.extents.y,
+                this.prefab.transform.position.z);
+            var f = GameObject.Instantiate(flag, this.obj.transform.position, Quaternion.identity, this.obj.transform.parent);
+            f.transform.localScale *= 10;
         }
     }
 }
