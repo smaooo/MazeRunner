@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Linq;
+using UnityEngine.AI;
 
 namespace MazeObjects
 {
 
-    public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN}
+    public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN, ENEMY}
     [Serializable]
     public struct Prefab
     {
@@ -175,6 +176,7 @@ namespace MazeObjects
                 }
             }
             int coinCounter = 0;
+            int enemyCounter = 0;
             var current = unvisited.Last();
             unvisited.Remove(current);
 
@@ -215,10 +217,20 @@ namespace MazeObjects
                         new Cell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL)) : 
                         new CoinCell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
                     this.grid[current.x, current.y].Destroy();
-                    this.grid[current.x, current.y] = coinCounter % 6 != 0 ?
-                        new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL)) :
-                        new CoinCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
 
+                    if (coinCounter % 6 == 0)
+                    {
+                        this.grid[current.x, current.y] = new CoinCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
+                    }
+                    else if (enemyCounter % 11 == 0)
+                    {
+                        this.grid[current.x, current.y] = new EnemyCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.ENEMY));
+                    }
+                    else
+                    {
+                        this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                    }
+                    
                     this.cells.Add(this.grid[nx, ny]);
                     this.cells.Add(this.grid[current.x, current.y]);
                     current = n;
@@ -234,6 +246,7 @@ namespace MazeObjects
                 }
 
                 coinCounter++;
+                enemyCounter++;
             }
 
             SetStartEnd(0);
@@ -320,6 +333,8 @@ namespace MazeObjects
             this.prefab = prefab;
             var locs = new Vector2Int[] { new Vector2Int(-2, 0), new Vector2Int(0, -2), new Vector2Int(2, 0), new Vector2Int(0, 2) };
             neighbors = new List<Vector2Int>();
+            
+            
             foreach (var loc in locs)
             {
                 if (0 <= this.x + loc.x && this.x + loc.x < maze.w &&
@@ -332,7 +347,7 @@ namespace MazeObjects
             obj = GameObject.Instantiate(prefab);
 
             obj.transform.position = new Vector3(this.x * maze.cellScaleFactor, 0, this.y * maze.cellScaleFactor);
-
+          
         }
 
         public void Destroy()
@@ -350,6 +365,23 @@ namespace MazeObjects
             loc.y = this.obj.GetComponent<Renderer>().bounds.size.y;
             c.transform.position = loc;
             c.transform.SetParent(this.obj.transform);
+        }
+    }
+
+    public class EnemyCell : Cell
+    {
+        public EnemyCell(int x, int y, Maze maze, GameObject prefab, GameObject enemy) : base(x,y,maze,prefab)
+        {
+            this.obj.name = "EnemyCell";
+            var e = GameObject.Instantiate(enemy);
+            var loc = this.obj.transform.position;
+            loc.y = this.obj.GetComponent<Renderer>().bounds.size.y / 2;
+            e.transform.position = loc;
+            e.transform.SetParent(this.obj.transform);
+            e.GetComponent<Enemy>().cell = this;
+
+            //this.obj.GetComponent<NavMeshSurface>().BuildNavMesh();
+            
         }
     }
     public class Wall : Cell
