@@ -9,6 +9,15 @@ namespace MazeObjects
 {
 
     public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN, ENEMY}
+    public enum CellType { ENEMY, COIN, FLAG, CELL, SOLIDWALL, WALL}
+
+    [Serializable]
+    public struct CellProperties
+    {
+        public CellType type;
+        public Cell cell;
+    }
+
     [Serializable]
     public struct Prefab
     {
@@ -268,7 +277,7 @@ namespace MazeObjects
         }
 
 
-        private Vector2Int FindCellPosition(Cell cell)
+        public Vector2Int FindCellPosition(Cell cell)
         {
             Vector2Int pos = Vector2Int.zero;
             for (int i = 0; i < this.grid.GetLength(0); i++)
@@ -320,6 +329,7 @@ namespace MazeObjects
         public List<Vector2Int> neighbors;
         public GameObject prefab;
         public GameObject obj;
+        public Maze maze;
 
         public Cell()
         {
@@ -331,6 +341,7 @@ namespace MazeObjects
             this.x = x;
             this.y = y;
             this.prefab = prefab;
+            this.maze = maze;
             var locs = new Vector2Int[] { new Vector2Int(-2, 0), new Vector2Int(0, -2), new Vector2Int(2, 0), new Vector2Int(0, 2) };
             neighbors = new List<Vector2Int>();
             
@@ -347,7 +358,10 @@ namespace MazeObjects
             obj = GameObject.Instantiate(prefab);
 
             obj.transform.position = new Vector3(this.x * maze.cellScaleFactor, 0, this.y * maze.cellScaleFactor);
-          
+
+            obj.AddComponent<CellProp>().Properties = Helpers.SetProperites(this);
+            
+            this.obj.name = this.ToString() + GetHashCode();
         }
 
         public void Destroy()
@@ -372,7 +386,6 @@ namespace MazeObjects
     {
         public EnemyCell(int x, int y, Maze maze, GameObject prefab, GameObject enemy) : base(x,y,maze,prefab)
         {
-            this.obj.name = "EnemyCell";
             var e = GameObject.Instantiate(enemy);
             var loc = this.obj.transform.position;
             loc.y = this.obj.GetComponent<Renderer>().bounds.size.y / 2;
@@ -388,6 +401,7 @@ namespace MazeObjects
     {
         public Wall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
         {
+
         }
 
 
@@ -421,5 +435,44 @@ namespace MazeObjects
             var f = GameObject.Instantiate(flag, this.obj.transform.position, Quaternion.identity, this.obj.transform.parent);
             f.transform.localScale *= 10;
         }
+    }
+
+    public static class Helpers
+    {
+        public static CellProperties SetProperites(Cell cell) => cell switch
+        {
+
+            EnemyCell enemy => new CellProperties
+            {
+                type = CellType.ENEMY,
+                cell = cell,
+            },
+            CoinCell coing => new CellProperties
+            {
+                type = CellType.ENEMY,
+                cell = cell,
+            },
+            EndPoint flag => new CellProperties
+            {
+                type = CellType.FLAG,
+                cell = cell,
+            },
+            SolidWall solid => new CellProperties
+            {
+                type = CellType.SOLIDWALL,
+                cell = cell,
+            },
+            Wall wall => new CellProperties
+            {
+                type = CellType.WALL,
+                cell = cell,
+            },
+            _ => new CellProperties
+            {
+                type = CellType.CELL,
+                cell = cell,
+            },
+        };
+        
     }
 }

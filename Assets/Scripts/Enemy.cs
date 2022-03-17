@@ -6,7 +6,6 @@ using MazeObjects;
 public class Enemy : MonoBehaviour
 {
     public Cell cell;
-    bool reached = false;
     Vector3 initPos;
     void Start()
     {
