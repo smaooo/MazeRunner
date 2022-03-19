@@ -1,16 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Character : MonoBehaviour
 {
 
     private Animator controller;
     
+    private Rigidbody rb;
+    [SerializeField]
+    private float speed = 10f;
+
+    private float rotation = 0;
+    [SerializeField]
+    private float RotationSense = 100;
+
+    private GameObject currentCell;
+
     void Start()
     {
         controller = this.transform.GetChild(0).GetComponent<Animator>();
-        
+        rb = this.GetComponent<Rigidbody>();
+       
     }
 
     // Update is called once per frame
@@ -21,16 +33,28 @@ public class Character : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();   
-        if (Input.GetKeyDown(KeyCode.Space))
+     
+        if (currentCell != null) 
+            Move();
+        if (Input.GetAxis("Mouse X") != 0)
         {
-            controller.SetTrigger("Jump");
-        }
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            controller.ResetTrigger("Jump");
-        }
+            Rotate();
 
+        }
+        if (Input.GetAxisRaw("Vertical") < 0.1f)
+        {
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                controller.SetTrigger("Jump");
+            }
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                controller.ResetTrigger("Jump");
+            }
+
+        }
+       
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             controller.SetTrigger("Pick");
@@ -39,16 +63,115 @@ public class Character : MonoBehaviour
         {
             controller.ResetTrigger("Pick");
         }
+       
     }
 
     private void Move()
     {
-
-
-        controller.SetFloat("Move", Input.GetAxisRaw("Vertical"));
+        
+        //controller.SetFloat("Move", Input.GetKey(KeyCode.LeftShift) ? Input.GetAxisRaw("Vertical") * 2f : Input.GetAxisRaw("Vertical"));
         controller.SetBool("Walking", Input.GetAxisRaw("Vertical") < 0.1f ? false : true);
-        
-        
 
+        
+        var tmpSpeed = Input.GetKey(KeyCode.LeftShift) ? speed * 2 : speed;
+
+
+        if (Input.GetAxisRaw("Vertical") > 0.1f)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                StartCoroutine(JumpForward());
+            }
+            
+            StartCoroutine(LerpToRun(Input.GetKey(KeyCode.LeftShift) ? 1 : 0));
+            rb.velocity = Input.GetAxisRaw("Vertical") * this.transform.forward * tmpSpeed;
+            //controller.SetFloat("JumpForward", 0);
+            
+        }
+        else
+        {
+            controller.SetFloat("Move", 0);
+            rb.velocity = Vector3.zero;
+        }
+
+
+
+
+    }
+
+    private IEnumerator JumpForward()
+    {
+        float timer = 0;
+        while (controller.GetFloat("JumpForward") < 1f)
+        {
+            yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime / 2;
+            controller.SetFloat("JumpForward", Mathf.Lerp(controller.GetFloat("JumpForward"), 1, timer));
+        }
+
+        //yield return new WaitForSeconds(0.1f);
+        timer = 0;
+        while (controller.GetFloat("JumpForward") > 0.1f)
+        {
+            yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime / 2f;
+            controller.SetFloat("JumpForward", Mathf.Lerp(controller.GetFloat("JumpForward"), 0, timer));
+        }
+    }
+    private IEnumerator LerpToRun(int state)
+    {
+
+        float move = 0;
+        switch (state)
+        {
+            case 0:
+                move = 1f;
+                break;
+
+            case 1:
+                move = 2f;
+                break;
+        }
+
+        float timer = 0;
+        while (controller.GetFloat("Move") != move)
+        {
+            yield return new WaitForEndOfFrame();
+
+            timer += Time.deltaTime / 2;
+
+            controller.SetFloat("Move", Mathf.Lerp(controller.GetFloat("Move"), move, timer));
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Cell"))
+        {
+            currentCell = other.gameObject;
+        }
+    }
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Cell"))
+        {
+            currentCell = other.gameObject;
+        }
+    }
+    private void Rotate()
+    {
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionY;
+        rotation = Input.GetAxis("Mouse X") * RotationSense;
+        //rotation = ClampAngle(rotation, -270f, 270f);
+        print(rotation);
+        this.transform.Rotate(new Vector3(0, rotation, 0));
+        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
+    }
+
+    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+    {
+        if (lfAngle < -360f) lfAngle += 360f;
+        if (lfAngle > 360f) lfAngle -= 360f;
+        return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 }

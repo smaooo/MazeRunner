@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Enemy
   - Coin
+  - Brokable
+  - Cell
   layers:
   - Default
   - TransparentFX

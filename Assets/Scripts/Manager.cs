@@ -14,7 +14,7 @@ public class Manager : MonoBehaviour
 
     void Start()
     {
-
+        Cursor.lockState = CursorLockMode.Locked;
         var size = new Vector2(33, 33);
 
 

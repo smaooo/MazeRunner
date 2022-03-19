@@ -227,7 +227,7 @@ namespace MazeObjects
                         new CoinCell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
                     this.grid[current.x, current.y].Destroy();
 
-                    if (coinCounter % 6 == 0)
+                    if (coinCounter % 6 == 0 && !(this.grid[current.x, current.y] is StartPoint))
                     {
                         this.grid[current.x, current.y] = new CoinCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
                     }
