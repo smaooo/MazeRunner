@@ -289,7 +289,7 @@ MonoBehaviour:
     - name: 0
       obj: {fileID: 1878729626794818552, guid: 0af49b8b0f6d13d41a5692008c2df360, type: 3}
     - name: 1
-      obj: {fileID: 8144810119349573674, guid: 246c41b8cca29d247acbf3477b6a6251, type: 3}
+      obj: {fileID: 4031876240357119777, guid: 15d6c057886a763478e5447308d94d59, type: 3}
     - name: 2
       obj: {fileID: 7894556028747036938, guid: 3f0e0ea9f5f9b9a42948e1cab78516c9, type: 3}
     - name: 3
@@ -298,6 +298,8 @@ MonoBehaviour:
       obj: {fileID: 8740010797618170080, guid: 2bb00ab7afecd1a48b425d4050345dfe, type: 3}
     - name: 5
       obj: {fileID: 5427411505357649481, guid: 27cca1312d81a3848b3100028a70d1a8, type: 3}
+    - name: 6
+      obj: {fileID: 8144810119349573674, guid: 246c41b8cca29d247acbf3477b6a6251, type: 3}
 --- !u!4 &330471291
 Transform:
   m_ObjectHideFlags: 0

@@ -4,12 +4,13 @@ using UnityEngine;
 using System;
 using System.Linq;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace MazeObjects
 {
 
-    public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN, ENEMY}
-    public enum CellType { ENEMY, COIN, FLAG, CELL, SOLIDWALL, WALL}
+    public enum PrefabNames { CELL, WALL, SOLIDWALL, FLAG, COIN, ENEMY, BRWALL}
+    public enum CellType { ENEMY, COIN, FLAG, CELL, SOLIDWALL, WALL, BRWALL}
 
     [Serializable]
     public struct CellProperties
@@ -61,7 +62,15 @@ namespace MazeObjects
             {
                 for (int y = 0; y < this.h; y++)
                 {
-                    this.grid[x, y] = new Wall(x, y, this, this.prefabs.GetObject(PrefabNames.WALL));
+                    if (Random.Range(0,10) < 2)
+                    {
+                        this.grid[x, y] = new BRWall(x, y, this, this.prefabs.GetObject(PrefabNames.BRWALL));
+
+                    }
+                    else
+                    {
+                        this.grid[x,y] = new Wall(x, y, this, this.prefabs.GetObject(PrefabNames.WALL));
+                    }
                 }
             }
 
@@ -407,6 +416,13 @@ namespace MazeObjects
 
     }
 
+    public class BRWall : Wall
+    {
+        public BRWall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+        {
+
+        }
+    }
     public class SolidWall : Wall
     {
         public SolidWall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
