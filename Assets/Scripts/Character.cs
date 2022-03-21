@@ -17,6 +17,8 @@ public class Character : MonoBehaviour
     private float RotationSense = 100;
 
     private GameObject currentCell;
+    [SerializeField]
+    private GameObject Axe;
 
     void Start()
     {
@@ -58,14 +60,20 @@ public class Character : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             controller.SetTrigger("Pick");
+            Axe.GetComponent<CapsuleCollider>().enabled = true;
+            Axe.GetComponent<BoxCollider>().enabled = true;
+            Invoke("ResetAxe", 1);
         }
-        if (Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            controller.ResetTrigger("Pick");
-        }
+        
        
     }
 
+    private void ResetAxe()
+    {
+        controller.ResetTrigger("Pick");
+        Axe.GetComponent<CapsuleCollider>().enabled = false;
+        Axe.GetComponent<BoxCollider>().enabled = false;
+    }
     private void Move()
     {
         
@@ -90,6 +98,7 @@ public class Character : MonoBehaviour
         }
         else
         {
+            StopAllCoroutines();
             controller.SetFloat("Move", 0);
             rb.velocity = Vector3.zero;
         }
@@ -163,7 +172,6 @@ public class Character : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionY;
         rotation = Input.GetAxis("Mouse X") * RotationSense;
         //rotation = ClampAngle(rotation, -270f, 270f);
-        print(rotation);
         this.transform.Rotate(new Vector3(0, rotation, 0));
         rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
     }

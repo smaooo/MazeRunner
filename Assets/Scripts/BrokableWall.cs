@@ -4,14 +4,23 @@ using UnityEngine;
 
 public class BrokableWall : MonoBehaviour
 {
-    void Start()
+    private void OnTriggerEnter(Collider other)
     {
-        
+        if (other.CompareTag("Axe"))
+        {
+            for (int i = 0; i < this.transform.childCount; i++)
+            {
+                var rb = this.transform.GetChild(i).GetComponent<Rigidbody>();
+                rb.isKinematic = false;
+                rb.AddExplosionForce(10, rb.transform.position, 10);
+                StartCoroutine(DestroyTile(rb.gameObject));
+            }
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator DestroyTile(GameObject obj)
     {
-        
+        yield return new WaitForSeconds(1);
+        Destroy(obj);
     }
 }
