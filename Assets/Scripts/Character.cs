@@ -27,6 +27,8 @@ public class Character : MonoBehaviour
     private TextMeshProUGUI scoreText;
     [SerializeField]
     private Slider healthBar;
+    private bool usingAxe = false;
+    private bool canUpdateHealth = true;
 
     void Start()
     {
@@ -43,10 +45,19 @@ public class Character : MonoBehaviour
 
     private void UpdateHealth()
     {
-        healthBar.value -= 0.1f;
+        if (canUpdateHealth)
+        {
+            healthBar.value -= 0.05f;
+            canUpdateHealth = false;
+            Invoke("HealthCondition", 2);
+        }
     }
 
-    private void UpdateScore(int s)
+    private void HealthCondition()
+    {
+        canUpdateHealth = true;
+    }
+    public void UpdateScore(int s)
     {
         score += s;
         scoreText.text = score.ToString();
@@ -77,6 +88,7 @@ public class Character : MonoBehaviour
        
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
+            usingAxe = true;
             controller.SetTrigger("Pick");
             Axe.GetComponent<CapsuleCollider>().enabled = true;
             Axe.GetComponent<BoxCollider>().enabled = true;
@@ -91,6 +103,7 @@ public class Character : MonoBehaviour
         controller.ResetTrigger("Pick");
         Axe.GetComponent<CapsuleCollider>().enabled = false;
         Axe.GetComponent<BoxCollider>().enabled = false;
+        usingAxe = false;
     }
     private void Move()
     {
@@ -128,7 +141,7 @@ public class Character : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (collision.gameObject.CompareTag("Enemy") && !usingAxe)
         {
             UpdateHealth();
         }

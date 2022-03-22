@@ -12,7 +12,7 @@ public class PickAxe : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
-        print(collision.gameObject);
+        
         if (collision.gameObject.CompareTag("Brokable"))
         {
             collision.gameObject.GetComponent<Rigidbody>().isKinematic = false;
@@ -20,5 +20,7 @@ public class PickAxe : MonoBehaviour
                 ForceMode.Impulse);
 
         }
+
+        
     }
 }

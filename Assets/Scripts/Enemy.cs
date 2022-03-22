@@ -19,6 +19,14 @@ public class Enemy : MonoBehaviour
         
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Axe"))
+        {
+            FindObjectOfType<Character>().UpdateScore(20);
+            Destroy(this.gameObject);
+        }
+    }
     private IEnumerator Move()
     {
         var dest = Random.insideUnitCircle * 0.9f;
