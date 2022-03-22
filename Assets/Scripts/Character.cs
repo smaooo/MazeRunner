@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
+using TMPro;
 
 public class Character : MonoBehaviour
 {
@@ -20,6 +22,12 @@ public class Character : MonoBehaviour
     [SerializeField]
     private GameObject Axe;
 
+    private int score;
+    [SerializeField]
+    private TextMeshProUGUI scoreText;
+    [SerializeField]
+    private Slider healthBar;
+
     void Start()
     {
         controller = this.transform.GetChild(0).GetComponent<Animator>();
@@ -33,6 +41,16 @@ public class Character : MonoBehaviour
         
     }
 
+    private void UpdateHealth()
+    {
+        healthBar.value -= 0.1f;
+    }
+
+    private void UpdateScore(int s)
+    {
+        score += s;
+        scoreText.text = score.ToString();
+    }
     private void FixedUpdate()
     {
      
@@ -108,6 +126,15 @@ public class Character : MonoBehaviour
 
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            UpdateHealth();
+        }
+    }
+
+   
     private IEnumerator JumpForward()
     {
         float timer = 0;
@@ -158,6 +185,11 @@ public class Character : MonoBehaviour
         if (other.CompareTag("Cell"))
         {
             currentCell = other.gameObject;
+        }
+        else if (other.CompareTag("Coin"))
+        {
+            Destroy(other.gameObject);
+            UpdateScore(10);
         }
     }
     private void OnTriggerStay(Collider other)
