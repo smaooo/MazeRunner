@@ -64,7 +64,7 @@ namespace MazeObjects
                 {
                     if (Random.Range(0,10) < 2)
                     {
-                        this.grid[x, y] = new BRWall(x, y, this, this.prefabs.GetObject(PrefabNames.BRWALL));
+                        this.grid[x, y] = new BRWall(x, y, this, this.prefabs.GetObject(PrefabNames.BRWALL), this.prefabs);
 
                     }
                     else
@@ -235,7 +235,7 @@ namespace MazeObjects
                         new Cell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL)) : 
                         new CoinCell(nx, ny, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
                     this.grid[current.x, current.y].Destroy();
-
+                    
                     if (coinCounter % 6 == 0 && !(this.grid[current.x, current.y] is StartPoint))
                     {
                         this.grid[current.x, current.y] = new CoinCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL), this.prefabs.GetObject(PrefabNames.COIN));
@@ -246,7 +246,15 @@ namespace MazeObjects
                     }
                     else
                     {
-                        this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                        if (Random.Range(0,6) <=3)
+                        {
+                            this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+
+                        }
+                        else
+                        {
+                            this.grid[current.x, current.y] = new UpCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                        }
                     }
                     
                     this.cells.Add(this.grid[nx, ny]);
@@ -339,6 +347,7 @@ namespace MazeObjects
         public GameObject prefab;
         public GameObject obj;
         public Maze maze;
+        public GameObject child;
 
         public Cell()
         {
@@ -376,6 +385,10 @@ namespace MazeObjects
         public void Destroy()
         {
             GameObject.Destroy(this.obj);
+            if (child != null)
+            {
+                GameObject.Destroy(this.child);
+            }
         }
     }
 
@@ -383,11 +396,12 @@ namespace MazeObjects
     {
         public CoinCell(int x, int y, Maze maze, GameObject prefab, GameObject coin) : base(x,y, maze, prefab)
         {
-            var c = GameObject.Instantiate(coin);
+            this.child = GameObject.Instantiate(coin);
             var loc = this.obj.transform.position;
             loc.y = this.obj.GetComponent<Renderer>().bounds.size.y;
-            c.transform.position = loc;
-            c.transform.SetParent(this.obj.transform);
+            this.child.transform.position = loc;
+            this.child.transform.SetParent(this.obj.transform);
+            
         }
     }
 
@@ -395,15 +409,26 @@ namespace MazeObjects
     {
         public EnemyCell(int x, int y, Maze maze, GameObject prefab, GameObject enemy) : base(x,y,maze,prefab)
         {
-            var e = GameObject.Instantiate(enemy);
+            this.child = GameObject.Instantiate(enemy);
             var loc = this.obj.transform.position;
             loc.y = this.obj.GetComponent<Renderer>().bounds.size.y / 2;
-            e.transform.position = loc;
-            e.transform.SetParent(this.obj.transform);
-            e.GetComponent<Enemy>().cell = this;
+            this.child.transform.position = loc;
+            this.child.transform.SetParent(this.obj.transform);
+            this.child.GetComponent<Enemy>().cell = this;
 
             //this.obj.GetComponent<NavMeshSurface>().BuildNavMesh();
             
+        }
+    }
+
+    public class UpCell : Cell
+    {
+        public UpCell(int x, int y, Maze maze, GameObject prefab) : base(x,y,maze, prefab)
+        {
+            var loc = this.obj.transform.position;
+
+            loc.y += this.obj.GetComponent<Renderer>().bounds.size.y;
+            this.obj.transform.position = loc;
         }
     }
     public class Wall : Cell
@@ -418,9 +443,22 @@ namespace MazeObjects
 
     public class BRWall : Wall
     {
-        public BRWall(int x, int y, Maze maze, GameObject prefab) : base(x, y, maze, prefab)
+        Cell underCell;
+        public BRWall(int x, int y, Maze maze, GameObject prefab, Prefabs prefabs) : base(x, y, maze, prefab)
         {
-
+            int r = Random.Range(0, 10);
+            if (r < 6 && r >= 2)
+            {
+                underCell = new EnemyCell(x, y, maze, prefabs.GetObject(PrefabNames.CELL), prefabs.GetObject(PrefabNames.ENEMY));
+            }
+            else if (r < 2)
+            {
+                underCell = new CoinCell(x, y, maze, prefabs.GetObject(PrefabNames.CELL), prefabs.GetObject(PrefabNames.COIN));
+            }
+            else
+            {
+                underCell = new Cell(x, y, maze, prefabs.GetObject(PrefabNames.CELL));
+            }
         }
     }
     public class SolidWall : Wall

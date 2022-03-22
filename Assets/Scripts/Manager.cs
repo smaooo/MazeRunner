@@ -28,7 +28,15 @@ public class Manager : MonoBehaviour
 
         var next = x.GetNeighbors(x.start)[0];
         loc = next.obj.transform.position;
-        loc.y += next.obj.GetComponent<Renderer>().bounds.size.y / 2;
+        if (next is UpCell)
+        {
+            loc.y -= next.obj.GetComponent<Renderer>().bounds.size.y / 2;
+        } 
+        else
+        {
+            loc.y += next.obj.GetComponent<Renderer>().bounds.size.y / 2;
+
+        }
         character.transform.rotation = Quaternion.LookRotation(loc - character.transform.position, character.transform.up);
 
 
