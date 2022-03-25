@@ -29,12 +29,12 @@ public class Character : MonoBehaviour
     private Slider healthBar;
     private bool usingAxe = false;
     private bool canUpdateHealth = true;
-
+    private bool isGrounded = true;
     void Start()
     {
         controller = this.transform.GetChild(0).GetComponent<Animator>();
         rb = this.GetComponent<Rigidbody>();
-       
+
     }
 
     // Update is called once per frame
@@ -114,11 +114,14 @@ public class Character : MonoBehaviour
         
         var tmpSpeed = Input.GetKey(KeyCode.LeftShift) ? speed * 2 : speed;
 
-
-        if (Input.GetAxisRaw("Vertical") > 0.1f)
+        print(isGrounded);
+        if (Input.GetAxisRaw("Vertical") > 0.1f && isGrounded)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                var jumpAx = Quaternion.Euler(0, 0, 45f) * this.transform.up;
+                rb.AddForce(Quaternion.Euler(0,0,45) * Vector3.up * 200, ForceMode.Impulse);
+                isGrounded = false;
                 StartCoroutine(JumpForward());
             }
             
@@ -139,11 +142,32 @@ public class Character : MonoBehaviour
 
     }
 
+    //private bool isGrounded()
+    //{
+    //    var sp = this.GetComponent<SphereCollider>();
+    //    return Physics.CheckCapsule(this.transform.position, new Vector3(sp.bounds.center.x,sp.bounds.min.y,sp.bounds.center.z),
+    //        sp.radius, LayerMask.GetMask("Cell"));
+    //}
+
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Enemy") && !usingAxe)
         {
             UpdateHealth();
+        }
+
+        else if (collision.gameObject.CompareTag("Cell"))
+        {
+            isGrounded = true;
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Cell"))
+        {
+            isGrounded = true;
         }
     }
 
@@ -151,6 +175,7 @@ public class Character : MonoBehaviour
     private IEnumerator JumpForward()
     {
         float timer = 0;
+        
         while (controller.GetFloat("JumpForward") < 1f)
         {
             yield return new WaitForEndOfFrame();
@@ -214,11 +239,11 @@ public class Character : MonoBehaviour
     }
     private void Rotate()
     {
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionY;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rotation = Input.GetAxis("Mouse X") * RotationSense;
         //rotation = ClampAngle(rotation, -270f, 270f);
         this.transform.Rotate(new Vector3(0, rotation, 0));
-        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)

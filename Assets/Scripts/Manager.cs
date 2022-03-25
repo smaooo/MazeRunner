@@ -38,7 +38,7 @@ public class Manager : MonoBehaviour
 
         }
         character.transform.rotation = Quaternion.LookRotation(loc - character.transform.position, character.transform.up);
-
+        FindObjectOfType<Compass>().endPoint = x.end;
 
        
     }
