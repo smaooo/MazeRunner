@@ -246,15 +246,15 @@ namespace MazeObjects
                     }
                     else
                     {
-                        if (Random.Range(0,6) <=3)
-                        {
-                            this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                        this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                        //if (Random.Range(0,6) <=3)
+                        //{
 
-                        }
-                        else
-                        {
-                            this.grid[current.x, current.y] = new UpCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
-                        }
+                        //}
+                        //else
+                        //{
+                        //    this.grid[current.x, current.y] = new UpCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
+                        //}
                     }
                     
                     this.cells.Add(this.grid[nx, ny]);

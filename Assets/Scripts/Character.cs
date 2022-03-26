@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
 using TMPro;
+using MazeObjects;
 
 public class Character : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class Character : MonoBehaviour
     [SerializeField]
     private float RotationSense = 100;
 
-    private GameObject currentCell;
+    public Cell currentCell;
     [SerializeField]
     private GameObject Axe;
 
@@ -30,6 +31,8 @@ public class Character : MonoBehaviour
     private bool usingAxe = false;
     private bool canUpdateHealth = true;
     private bool isGrounded = true;
+
+    
     void Start()
     {
         controller = this.transform.GetChild(0).GetComponent<Animator>();
@@ -40,7 +43,7 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //print(currentCell);
     }
 
     private void UpdateHealth()
@@ -72,19 +75,19 @@ public class Character : MonoBehaviour
             Rotate();
 
         }
-        if (Input.GetAxisRaw("Vertical") < 0.1f)
-        {
+        //if (Input.GetAxisRaw("Vertical") < 0.1f)
+        //{
 
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                controller.SetTrigger("Jump");
-            }
-            if (Input.GetKeyUp(KeyCode.Space))
-            {
-                controller.ResetTrigger("Jump");
-            }
+        //    if (Input.GetKeyDown(KeyCode.Space))
+        //    {
+        //        controller.SetTrigger("Jump");
+        //    }
+        //    if (Input.GetKeyUp(KeyCode.Space))
+        //    {
+        //        controller.ResetTrigger("Jump");
+        //    }
 
-        }
+        //}
        
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -114,16 +117,16 @@ public class Character : MonoBehaviour
         
         var tmpSpeed = Input.GetKey(KeyCode.LeftShift) ? speed * 2 : speed;
 
-        print(isGrounded);
+        //print(isGrounded);
         if (Input.GetAxisRaw("Vertical") > 0.1f && isGrounded)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                var jumpAx = Quaternion.Euler(0, 0, 45f) * this.transform.up;
-                rb.AddForce(Quaternion.Euler(0,0,45) * Vector3.up * 200, ForceMode.Impulse);
-                isGrounded = false;
-                StartCoroutine(JumpForward());
-            }
+            //if (Input.GetKeyDown(KeyCode.Space))
+            //{
+            //    var jumpAx = Quaternion.Euler(0, 0, 45f) * this.transform.up;
+            //    rb.AddForce(Quaternion.Euler(0,0,45) * Vector3.up * 200, ForceMode.Impulse);
+            //    isGrounded = false;
+            //    StartCoroutine(JumpForward());
+            //}
             
             StartCoroutine(LerpToRun(Input.GetKey(KeyCode.LeftShift) ? 1 : 0));
             rb.velocity = Input.GetAxisRaw("Vertical") * this.transform.forward * tmpSpeed;
@@ -222,7 +225,7 @@ public class Character : MonoBehaviour
     {
         if (other.CompareTag("Cell"))
         {
-            currentCell = other.gameObject;
+            currentCell = other.GetComponent<CellProp>().properties.cell;
         }
         else if (other.CompareTag("Coin"))
         {
@@ -234,7 +237,7 @@ public class Character : MonoBehaviour
     {
         if (other.CompareTag("Cell"))
         {
-            currentCell = other.gameObject;
+            currentCell = other.GetComponent<CellProp>().properties.cell;
         }
     }
     private void Rotate()
