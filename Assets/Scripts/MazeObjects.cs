@@ -247,14 +247,7 @@ namespace MazeObjects
                     else
                     {
                         this.grid[current.x, current.y] = new Cell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
-                        //if (Random.Range(0,6) <=3)
-                        //{
-
-                        //}
-                        //else
-                        //{
-                        //    this.grid[current.x, current.y] = new UpCell(current.x, current.y, this, this.prefabs.GetObject(PrefabNames.CELL));
-                        //}
+                        
                     }
                     
                     this.cells.Add(this.grid[nx, ny]);
@@ -415,8 +408,6 @@ namespace MazeObjects
             this.child.transform.position = loc;
             this.child.transform.SetParent(this.obj.transform);
             this.child.GetComponent<Enemy>().cell = this;
-
-            //this.obj.GetComponent<NavMeshSurface>().BuildNavMesh();
             
         }
     }
@@ -501,7 +492,7 @@ namespace MazeObjects
                 type = CellType.ENEMY,
                 cell = cell,
             },
-            CoinCell coing => new CellProperties
+            CoinCell coin => new CellProperties
             {
                 type = CellType.ENEMY,
                 cell = cell,

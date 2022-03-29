@@ -31,7 +31,9 @@ public class Character : MonoBehaviour
     private bool usingAxe = false;
     private bool canUpdateHealth = true;
     private bool isGrounded = true;
-
+    [SerializeField]
+    private TextMeshProUGUI time;
+    private float timer = 0f;
     
     void Start()
     {
@@ -43,7 +45,8 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //print(currentCell);
+        timer += Time.deltaTime;
+        time.text = timer.ToString("0.0");
     }
 
     private void UpdateHealth()
